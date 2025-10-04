@@ -1,0 +1,23 @@
+# YOLOv8 Building Detection Requirements
+# Install with: pip install -r requirements_yolo.txt
+
+# Core YOLO and Computer Vision
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+pillow>=10.0.0
+
+# Game Integration
+pyautogui>=0.9.54
+pydirectinput>=1.0.4
+pynput>=1.8.0  # For keyboard listening
+
+# Windows API (already installed with pywin32)
+# pywin32>=306
+
+# Optional: For better performance
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Development and debugging
+matplotlib>=3.7.0  # For visualization

@@ -1,0 +1,21 @@
+# GTA5 VgamePad Setup Requirements
+# Install with: pip install -r requirements.txt
+
+# Core vgamepad library for virtual Xbox controller
+vgamepad>=0.0.6
+
+# Windows API for window management
+pywin32>=306
+
+# Additional dependencies for enhanced functionality
+opencv-python>=4.8.0
+pillow>=10.0.0
+numpy>=1.24.0
+
+# Optional: For advanced input handling
+pygame>=2.5.0
+
+# Development dependencies (optional)
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
