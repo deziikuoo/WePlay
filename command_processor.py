@@ -39,6 +39,9 @@ class GameServiceRegistry:
             'spider-man': self._load_spiderman_commands,
             'grand theft auto': self._load_gta5_commands,
             'gta': self._load_gta5_commands,
+            'runescape': self._load_runescape_commands,
+            'osrs': self._load_runescape_commands,
+            'old school runescape': self._load_runescape_commands,
         }
     
     def detect_and_load_game(self, game_title):
@@ -129,6 +132,81 @@ class GameServiceRegistry:
         """Load GTA5 commands (placeholder for future implementation)"""
         print("GTA5 service not yet implemented, using generic commands")
         return self._load_generic_commands()
+    
+    def _load_runescape_commands(self):
+        """Load RuneScape commands"""
+        commands = {}
+        
+        try:
+            # Import RuneScape modules
+            runescape_base_path = os.path.join(os.path.dirname(__file__), 'A', 'Game_Services', 'RuneScape_Service')
+            
+            # Add the RuneScape service path to sys.path for imports
+            if runescape_base_path not in sys.path:
+                sys.path.append(runescape_base_path)
+            
+            # Add the YOLO Detector subdirectory to sys.path
+            yolo_detector_path = os.path.join(runescape_base_path, 'Yolo Detector')
+            if yolo_detector_path not in sys.path:
+                sys.path.append(yolo_detector_path)
+            
+            # Add the Windows Management path for imports
+            windows_mgmt_path = os.path.join(os.path.dirname(__file__), 'B', 'Windows Managment', 'Window_Management_Controls')
+            if windows_mgmt_path not in sys.path:
+                sys.path.append(windows_mgmt_path)
+            
+            # Load RuneScape commands
+            commands_path = os.path.join(runescape_base_path, 'runescape_commands.py')
+            if os.path.exists(commands_path):
+                spec = importlib.util.spec_from_file_location("runescape_commands", commands_path)
+                commands_module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(commands_module)
+                
+                # Create RuneScape commands instance and get available commands
+                rs_instance = commands_module.RuneScapeCommands()
+                
+                # Add basic woodcutting commands
+                commands.update({
+                    'chop tree': lambda: rs_instance.chop_tree(),
+                    'chop oak': lambda: rs_instance.chop_specific_tree('oak'),
+                    'chop willow': lambda: rs_instance.chop_specific_tree('willow'),
+                    'chop maple': lambda: rs_instance.chop_specific_tree('maple'),
+                    'chop yew': lambda: rs_instance.chop_specific_tree('yew'),
+                    'chop magic': lambda: rs_instance.chop_specific_tree('magic'),
+                    'auto woodcut': lambda: rs_instance.auto_woodcutting(duration_minutes=5),
+                    'auto chop oak': lambda: rs_instance.auto_woodcutting(tree_type='oak', duration_minutes=5),
+                    'auto chop willow': lambda: rs_instance.auto_woodcutting(tree_type='willow', duration_minutes=5),
+                    'mine rock': lambda: rs_instance.mine_rock(),
+                    'mine iron': lambda: rs_instance.mine_rock('iron'),
+                    'mine coal': lambda: rs_instance.mine_rock('coal'),
+                    'attack goblin': lambda: rs_instance.attack_npc('goblin'),
+                    'attack cow': lambda: rs_instance.attack_npc('cow'),
+                    'chick': lambda: rs_instance.attack_chicken(),
+                    'chick hunting': lambda: rs_instance.chicken_hunting(),
+                    'end': lambda: rs_instance.stop_hunting(),
+                    'collect coins': lambda: rs_instance.collect_item('coin'),
+                    'open bank': lambda: rs_instance.open_bank(),
+                    'scan objects': lambda: rs_instance.scan_objects(),
+                    'combat tab': lambda: rs_instance.switch_interface_tab('combat'),
+                    'skills tab': lambda: rs_instance.switch_interface_tab('skills'),
+                    'quests tab': lambda: rs_instance.switch_interface_tab('quests'),
+                    'equipment tab': lambda: rs_instance.switch_interface_tab('equipment'),
+                    'prayers tab': lambda: rs_instance.switch_interface_tab('prayers'),
+                    'spells tab': lambda: rs_instance.switch_interface_tab('spells'),
+                    'inventory tab': lambda: rs_instance.switch_interface_tab('inventory'),
+                    'world map': lambda: rs_instance.press_key('ctrl_m'),
+                })
+                
+                print(f"SUCCESS: Loaded {len(commands)} RuneScape commands")
+            else:
+                print(f"ERROR: RuneScape commands file not found at: {commands_path}")
+                return self._load_generic_commands()
+                
+        except Exception as e:
+            print(f"ERROR: Error loading RuneScape commands: {e}")
+            return self._load_generic_commands()
+        
+        return commands
     
     def _load_generic_commands(self):
         """Load generic commands that work with most games"""
@@ -267,9 +345,16 @@ class GameWindowManager:
                         'call of duty', 'fifa', 'nba', 'madden', 'minecraft',
                         'fallout', 'elder scrolls', 'witcher', 'cyberpunk',
                         'red dead', 'spider-man', 'batman', 'tomb raider',
-                        'rockstar', 'steam -', 'epic games -', 'origin -',
+                        'rockstar', 'old school runescape client', 'runescape client',
+                        'steam -', 'epic games -', 'origin -',
                         'uplay -', 'battle.net -'
-                    ]) and
+                    ]) or
+                    # More specific RuneScape detection
+                    (('runescape' in window_title.lower() or 'osrs' in window_title.lower()) and 
+                     not any(exclude in window_title.lower() for exclude in [
+                         'runescape_command_list', 'runescape_', '.md', '.txt', 
+                         'cursor', 'beemo-plays', 'document', 'file'
+                     ])) and
                     # Exclude launcher-only windows
                     not any(launcher in window_title.lower() for launcher in [
                         'steam$', 'epic games launcher', 'origin launcher',
@@ -294,7 +379,7 @@ class GameWindowManager:
     def wait_for_game(self):
         """Wait for any game to be detected (no time limit)"""
         print("No game detected. Waiting for a game to be launched...")
-        print("Please launch any game with controller support")
+        print("Please launch any game")
         
         while not self.find_game_window():
             time.sleep(3)
@@ -380,30 +465,26 @@ class GameWindowManager:
                 width = rect[2] - rect[0]
                 height = rect[3] - rect[1]
                 
-                # Try multiple click positions for better success rate
-                click_positions = [
-                    ((rect[0] + rect[2]) // 2, (rect[1] + rect[3]) // 2),  # Center
-                    (rect[0] + width // 4, rect[1] + height // 4),         # Top-left quarter
-                    (rect[0] + 3 * width // 4, rect[1] + height // 4),     # Top-right quarter
-                ]
+                # Single click at center for focus
+                click_x = (rect[0] + rect[2]) // 2
+                click_y = (rect[1] + rect[3]) // 2
                 
-                for i, (click_x, click_y) in enumerate(click_positions):
-                    print(f"    Attempt {i+1}: Clicking at ({click_x}, {click_y})")
-                    
-                    # Move cursor and click
-                    win32api.SetCursorPos((click_x, click_y))
-                    time.sleep(0.1)  # Brief pause
-                    
-                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, click_x, click_y, 0, 0)
-                    time.sleep(0.05)
-                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, click_x, click_y, 0, 0)
+                print(f"    Attempt 1: Clicking at ({click_x}, {click_y})")
+                
+                # Move cursor and click
+                win32api.SetCursorPos((click_x, click_y))
+                time.sleep(0.1)  # Brief pause
+                
+                win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, click_x, click_y, 0, 0)
+                time.sleep(0.05)
+                win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, click_x, click_y, 0, 0)
                 
                 time.sleep(0.3)
                 if win32gui.GetForegroundWindow() == self.game_window:
                     print(f" Method 3 SUCCESS: Game window focused: {self.game_window_title}")
                     return True
                 
-                print("    Method 3 failed: All click attempts failed")
+                print("    Method 3 failed: Click attempt failed")
             except Exception as e:
                 print(f"    Method 3 failed: {e}")
             

@@ -1,0 +1,27 @@
+# RuneScape Service Dependencies
+# Install with: pip install -r requirements_runescape.txt
+
+# YOLO Object Detection
+ultralytics>=8.0.0
+# CUDA-enabled PyTorch (install with CUDA support)
+torch>=2.0.0+cu118
+torchvision>=0.15.0+cu118
+# Alternative: Install via pip with CUDA index URL
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# Computer Vision
+opencv-python>=4.8.0
+numpy>=1.24.0
+pyautogui>=0.9.54
+
+# Windows API
+pywin32>=306
+
+# Input Simulation
+pydirectinput>=1.0.4
+
+# Image Processing
+Pillow>=10.0.0
+
+# Additional utilities
+psutil>=5.9.0

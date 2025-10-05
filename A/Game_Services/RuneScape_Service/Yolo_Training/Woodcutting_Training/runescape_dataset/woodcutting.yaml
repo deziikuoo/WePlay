@@ -1,0 +1,8 @@
+names:
+  - tree
+  - oak_tree
+  - willow_tree
+nc: 3
+path: C:\Users\dawan\OneDrive\Documents\Coding Files\Beemo-Plays\A\Game_Services\RuneScape_Service\Yolo_Training\runescape_dataset
+train: images/train
+val: images/val

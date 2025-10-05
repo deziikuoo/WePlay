@@ -1,0 +1,23 @@
+# YOLO Annotation Format Template
+# Each line represents one object in the image
+# Format: class_id center_x center_y width height
+# All coordinates are normalized (0.0 to 1.0)
+
+# Class IDs:
+# 0 = tree
+# 1 = oak_tree
+# 2 = willow_tree
+# 3 = rock
+# 4 = iron_rock
+# 5 = coal_rock
+
+# Example annotations:
+# 0 0.5 0.3 0.1 0.2    # A tree in the center-left
+# 1 0.8 0.6 0.15 0.25  # An oak tree in the bottom-right
+# 3 0.2 0.7 0.08 0.12  # A rock in the bottom-left
+
+# How to annotate:
+# 1. Use LabelImg (pip install labelimg)
+# 2. Open LabelImg and set format to YOLO
+# 3. Draw bounding boxes around objects
+# 4. Save annotations as .txt files with same name as images

@@ -1,0 +1,6 @@
+names:
+- chicken
+nc: 1
+path: C:\Users\dawan\OneDrive\Documents\Coding Files\We-Play\A\Game_Services\RuneScape_Service\Yolo_Training\Chicken_Training\runescape_dataset
+train: images/train
+val: images/val
